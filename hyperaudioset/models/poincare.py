@@ -1,3 +1,5 @@
+from typing import Any
+
 import torch
 import torch.nn as nn
 
@@ -39,3 +41,27 @@ class PoincareEmbedding(nn.Embedding):
         embedding = embedding.where(condition, projected_embedding)
 
         return embedding
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        x = super().forward(input)
+        output = RiemannGradientFunction.apply(x)
+
+        return output
+
+
+class RiemannGradientFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx: Any, input: torch.Tensor) -> torch.Tensor:
+        ctx.save_for_backward(input)
+
+        return input
+
+    @staticmethod
+    def backward(ctx: Any, grad_output: torch.Tensor) -> torch.Tensor:
+        (input,) = ctx.saved_tensors
+
+        num = 1 - torch.sum(input**2, dim=-1)
+        scale = (num**2) / 4
+        grad_input = scale.unsqueeze(dim=-1) * grad_output
+
+        return grad_input
