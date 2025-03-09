@@ -6,11 +6,18 @@ indexer:
 dataset:
   train:
     _target_:
+  evaluate:
+    _target_:
 
 dataloader:
   train:
     _target_: torch.utils.data.DataLoader
     collate_fn:
       _target_: hyperaudioset.utils.data.NegativeSamplingCollator
+  evaluate:
+    _target_: torch.utils.data.DataLoader
+    collate_fn:
+      _target_: hyperaudioset.utils.data.NegativeSamplingCollator
+    batch_size: 1
 
 num_embeddings:
