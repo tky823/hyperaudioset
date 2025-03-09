@@ -1,5 +1,6 @@
 defaults:
   - system: default
+  - data: default
   - model: default
   - optimizer: default
   - criterion: default
