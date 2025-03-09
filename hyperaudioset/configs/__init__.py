@@ -115,6 +115,8 @@ class Config:
     model: ModelConfig
     criterion: CriterionConfig
     optimizer: OptimizerConfig
-    epochs: int
     exp_dir: str
+    epochs: int
     tensorboard_dir: str
+    root: str
+    depth: int

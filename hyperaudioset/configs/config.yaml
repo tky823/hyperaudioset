@@ -6,10 +6,18 @@ defaults:
   - criterion: default
   - _self_
 
-epochs: 100
-now: ${now:%Y%m%d-%H%M%S}
+# train & visualize
 exp_dir: "./exp/${.now}"
+
+# train
+epochs: 100
 tensorboard_dir: "./tensorboard/${.now}"
+
+# visualize
+root: ???
+depth: 3
+
+now: ${now:%Y%m%d-%H%M%S}
 
 hydra:
   job:
