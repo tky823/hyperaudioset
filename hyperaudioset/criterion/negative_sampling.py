@@ -31,4 +31,4 @@ class EuclidNegativeSamplingLoss(nn.Module):
     def compute_distance(
         self, input: torch.Tensor, other: torch.Tensor, dim: int = -1
     ) -> torch.Tensor:
-        return torch.linalg.vector_norm((input - other), dim=dim)
+        return torch.sum((input - other) ** 2, dim=dim)
