@@ -4,6 +4,17 @@ class Indexer:
     Args:
         name_to_index (dict): Dictionary to map name to index.
 
+    Examples:
+
+        >>> from hyperaudioset.utils.data.wordnet import load_mammal_name_to_index
+        >>> from hyperaudioset.utils.data import Indexer
+        >>> name_to_index = load_mammal_name_to_index()
+        >>> indexer = Indexer(name_to_index)
+        >>> indexer("mammal.n.01")
+        639
+        >>> indexer(["mammal.n.01", "dog.n.01"])
+        [639, 305]
+
     """
 
     def __init__(self, name_to_index: dict[str, int]) -> None:
