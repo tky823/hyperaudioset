@@ -8,7 +8,7 @@ import torch.nn as nn
 from omegaconf import DictConfig
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
-from torch.utils.data import DataLoader, IterableDataset
+from torch.utils.data import DataLoader
 from torch.utils.tensorboard.writer import SummaryWriter
 
 import hyperaudioset
@@ -17,6 +17,14 @@ from hyperaudioset.configs import Config
 from hyperaudioset.criterion.negative_sampling import _NegativeSamplingLoss
 from hyperaudioset.utils import setup
 from hyperaudioset.utils.data import Indexer
+from hyperaudioset.utils.data.audioset import (
+    EvaluationAudioSetDataset,
+    TrainingAudioSetDataset,
+)
+from hyperaudioset.utils.data.wordnet import (
+    EvaluationMammalDataset,
+    TrainingMammalDataset,
+)
 
 
 @hyperaudioset.main()
@@ -33,11 +41,11 @@ def main(config: Config | DictConfig) -> None:
     writer = SummaryWriter(config.tensorboard_dir)
 
     indexer: Indexer = hydra.utils.instantiate(config.data.indexer)
-    training_dataset: IterableDataset = hydra.utils.instantiate(
-        config.data.dataset.train
+    training_dataset: TrainingMammalDataset | TrainingAudioSetDataset = (
+        hydra.utils.instantiate(config.data.dataset.train)
     )
-    evaluation_dataset: IterableDataset = hydra.utils.instantiate(
-        config.data.dataset.evaluate
+    evaluation_dataset: EvaluationMammalDataset | EvaluationAudioSetDataset = (
+        hydra.utils.instantiate(config.data.dataset.evaluate)
     )
     training_dataloader: DataLoader = hydra.utils.instantiate(
         config.data.dataloader.train, training_dataset
