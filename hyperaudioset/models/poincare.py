@@ -38,7 +38,7 @@ class PoincareEmbedding(nn.Embedding):
         norm = torch.linalg.vector_norm(embedding, dim=-1, keepdim=True)
         projected_embedding = (1 - eps) * embedding / norm
         condition = norm > 1 - self.eps
-        embedding = embedding.where(condition, projected_embedding)
+        embedding = torch.where(condition, projected_embedding, embedding)
 
         return embedding
 
