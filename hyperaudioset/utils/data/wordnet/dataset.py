@@ -21,7 +21,7 @@ class TrainingMammalDadataset(IterableDataset):
 
         wordnet_root = os.path.join(hyperaudioset_cache_dir, "data", "WordNet")
 
-        url = "https://github.com/tky823/Audyn/releases/download/v0.0.5/wordnet_mammal.json"
+        url = "https://github.com/tky823/hyperaudioset/releases/download/v0.0.0/wordnet_mammal.json"
 
         if wordnet_root:
             os.makedirs(wordnet_root, exist_ok=True)
@@ -120,7 +120,7 @@ class EvaluationMammalDadataset(Dataset):
 
         wordnet_root = os.path.join(hyperaudioset_cache_dir, "data", "WordNet")
 
-        url = "https://github.com/tky823/Audyn/releases/download/v0.0.5/wordnet_mammal.json"
+        url = "https://github.com/tky823/hyperaudioset/releases/download/v0.0.0/wordnet_mammal.json"
 
         if wordnet_root:
             os.makedirs(wordnet_root, exist_ok=True)
