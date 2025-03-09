@@ -2,8 +2,6 @@ log/
 exp/
 tensorboard/
 
-data/
-
 # For Mac
 .DS_Store
 
