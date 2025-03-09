@@ -1,0 +1,23 @@
+defaults:
+  - default
+  - _self_
+
+indexer:
+  _target_: hyperaudioset.utils.data.Indexer
+  name_to_index:
+    _target_: hyperaudioset.utils.data.audioset.load_name_to_index
+
+dataset:
+  train:
+    _target_: hyperaudioset.utils.data.audioset.TrainingAudioSetDataset
+    num_neg_samples: 50
+  evaluate:
+    _target_: hyperaudioset.utils.data.audioset.EvaluationAudioSetDataset
+
+dataloader:
+  train:
+    batch_size: 10
+  evaluate:
+    batch_size: 1
+
+num_embeddings: 633
