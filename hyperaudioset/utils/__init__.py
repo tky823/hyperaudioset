@@ -1,3 +1,4 @@
+import importlib
 import os
 
 import hydra
@@ -9,6 +10,8 @@ from torch.optim import Optimizer
 from torch.optim.optimizer import ParamsT
 
 from ..configs import Config, _OptimizerConfig
+from ..models.poincare import PoincareEmbedding
+from ..optim.optimizer import RiemannSGD
 
 __all__ = [
     "hyperaudioset_cache_dir",
@@ -39,11 +42,41 @@ def setup(config: DictConfig | Config) -> None:
 def instantiate_optimizer(
     config: DictConfig | _OptimizerConfig, module_or_params: nn.Module | ParamsT
 ) -> Optimizer:
-    if isinstance(module_or_params, nn.Module):
-        params = module_or_params.parameters()
-    else:
-        params = module_or_params
+    """Instantiate optimizer to support Riemann SGD.
 
-    optimizer: Optimizer = hydra.utils.instantiate(config, params)
+    Args:
+        config (DictConfig): Optimizer config.
+        module_or_params (nn.Module or ParamsT): Parameters to be optimized.
+
+    """
+    target = config._target_
+    module, name = target.rsplit(".", maxsplit=1)
+    module = importlib.import_module(module)
+    optimizer_class = getattr(module, name)
+    optimizer_kwargs = {}
+
+    is_rsgd = optimizer_class is RiemannSGD
+
+    if is_rsgd:
+        if isinstance(module_or_params, nn.Module):
+            module = module_or_params
+
+            assert isinstance(module, PoincareEmbedding), (
+                "PoincareEmbedding should be used for RiemannSGD."
+            )
+
+            params = module.parameters()
+            optimizer_kwargs["proj"] = module.proj
+        else:
+            raise ValueError(
+                "Module should be given to instantiate_optimizer if optimizer is RiemannSGD."
+            )
+    else:
+        if isinstance(module_or_params, nn.Module):
+            params = module_or_params.parameters()
+        else:
+            params = module_or_params
+
+    optimizer: Optimizer = hydra.utils.instantiate(config, params, **optimizer_kwargs)
 
     return optimizer
