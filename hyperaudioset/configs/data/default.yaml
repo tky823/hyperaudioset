@@ -1,1 +1,6 @@
+indexer:
+  _target_: hyperaudioset.utils.data.Indexer
+  name_to_index:
+    _target_:
+
 num_embeddings:
