@@ -1,8 +1,8 @@
 from ._download import load_name_to_index
-from .dataset import EvaluationAudioSetDadataset, TrainingAudioSetDadataset
+from .dataset import EvaluationAudioSetDataset, TrainingAudioSetDataset
 
 __all__ = [
-    "TrainingAudioSetDadataset",
-    "EvaluationAudioSetDadataset",
+    "TrainingAudioSetDataset",
+    "EvaluationAudioSetDataset",
     "load_name_to_index",
 ]

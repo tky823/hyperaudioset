@@ -9,10 +9,10 @@ indexer:
 
 dataset:
   train:
-    _target_: hyperaudioset.utils.data.wordnet.TrainingMammalDadataset
+    _target_: hyperaudioset.utils.data.wordnet.TrainingMammalDataset
     num_neg_samples: 50
   evaluate:
-    _target_: hyperaudioset.utils.data.wordnet.EvaluationMammalDadataset
+    _target_: hyperaudioset.utils.data.wordnet.EvaluationMammalDataset
 
 dataloader:
   train:

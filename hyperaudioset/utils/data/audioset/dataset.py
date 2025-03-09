@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, IterableDataset
 from ._download import download_audioset_hierarchy
 
 
-class TrainingAudioSetDadataset(IterableDataset):
+class TrainingAudioSetDataset(IterableDataset):
     def __init__(
         self,
         num_neg_samples: int = 1,
@@ -112,7 +112,7 @@ class TrainingAudioSetDadataset(IterableDataset):
         return self.length
 
 
-class EvaluationAudioSetDadataset(Dataset):
+class EvaluationAudioSetDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
 

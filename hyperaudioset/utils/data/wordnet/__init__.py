@@ -1,8 +1,8 @@
 from ._download import load_mammal_name_to_index
-from .dataset import EvaluationMammalDadataset, TrainingMammalDadataset
+from .dataset import EvaluationMammalDataset, TrainingMammalDataset
 
 __all__ = [
-    "TrainingMammalDadataset",
-    "EvaluationMammalDadataset",
+    "TrainingMammalDataset",
+    "EvaluationMammalDataset",
     "load_mammal_name_to_index",
 ]

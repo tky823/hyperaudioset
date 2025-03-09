@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, IterableDataset
 from ._download import download_wordnet_hierarchy
 
 
-class TrainingMammalDadataset(IterableDataset):
+class TrainingMammalDataset(IterableDataset):
     def __init__(
         self,
         num_neg_samples: int = 1,
@@ -112,7 +112,7 @@ class TrainingMammalDadataset(IterableDataset):
         return self.length
 
 
-class EvaluationMammalDadataset(Dataset):
+class EvaluationMammalDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
 
