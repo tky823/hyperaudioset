@@ -42,3 +42,16 @@ def mobius_add(
     output = output.view(*batch_shape, num_features)
 
     return output
+
+
+def poincare_distance(
+    input: torch.Tensor, other: torch.Tensor, curvature: float = 1, dim: int = -1
+) -> torch.Tensor:
+    assert dim == -1
+
+    distance = mobius_add(-input, other, curvature=curvature)
+    norm = curvature**0.5 * torch.linalg.vector_norm(distance, dim=-1)
+    scale = 2 / (curvature**0.5)
+    output = scale * torch.tanh(norm)
+
+    return output
