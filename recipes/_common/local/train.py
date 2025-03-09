@@ -22,6 +22,8 @@ from hyperaudioset.utils.data import Indexer
 def main(config: Config | DictConfig) -> None:
     setup(config)
 
+    accelerator = config.system.accelerator
+
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -44,6 +46,10 @@ def main(config: Config | DictConfig) -> None:
     )
     model: nn.Module = hydra.utils.instantiate(config.model)
     criterion: nn.Module = hydra.utils.instantiate(config.criterion)
+
+    model = model.to(accelerator)
+    criterion = criterion.to(accelerator)
+
     optimizer: Optimizer = hyperaudioset.utils.instantiate_optimizer(
         config.optimizer.optimizer, model
     )
@@ -55,7 +61,7 @@ def main(config: Config | DictConfig) -> None:
     iteration = 0
 
     state = {
-        "accelerator": config.system.accelerator,
+        "accelerator": accelerator,
         "logger": logger,
         "writer": writer,
         "iteration": iteration,
