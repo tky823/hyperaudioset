@@ -6,8 +6,12 @@ defaults:
   - criterion: default
   - _self_
 
+now: ${now:%Y%m%d-%H%M%S}
+exp_dir: "./exp/${.now}"
+tensorboard_dir: "./tensorboard/${.now}"
+
 hydra:
   job:
     chdir: false
   run:
-    dir: "./log/${now:%Y%m%d-%H%M%S}"
+    dir: "${exp_dir}/log/${now}"
