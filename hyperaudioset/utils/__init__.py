@@ -1,6 +1,7 @@
 import os
 
 import torch
+from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 
 from ..configs import Config
@@ -22,5 +23,9 @@ def setup(config: DictConfig | Config) -> None:
             OmegaConf.update(config.system, "accelerator", "cuda")
         else:
             OmegaConf.update(config.system, "accelerator", "cpu")
+
+    output_dir = HydraConfig.get().runtime.output_dir
+    path = os.path.join(output_dir, ".hydra", "resolved_config.yaml")
+    OmegaConf.save(config, path, resolve=True)
 
     torch.manual_seed(config.system.seed)
