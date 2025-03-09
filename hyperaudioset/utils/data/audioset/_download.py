@@ -6,7 +6,7 @@ import uuid
 from ..._github import download_file_from_github_release
 
 
-def load_audioset_name_to_index(chunk_size: int = 8192) -> dict[str, int]:
+def load_name_to_index(chunk_size: int = 8192) -> dict[str, int]:
     from ... import hyperaudioset_cache_dir
 
     audioset_root = os.path.join(hyperaudioset_cache_dir, "data", "AudioSet")
