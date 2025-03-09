@@ -14,6 +14,7 @@ from torch.utils.tensorboard.writer import SummaryWriter
 import hyperaudioset
 import hyperaudioset.utils
 from hyperaudioset.configs import Config
+from hyperaudioset.criterion.negative_sampling import _NegativeSamplingLoss
 from hyperaudioset.utils import setup
 from hyperaudioset.utils.data import Indexer
 
@@ -45,7 +46,7 @@ def main(config: Config | DictConfig) -> None:
         config.data.dataloader.evaluate, evaluation_dataset
     )
     model: nn.Module = hydra.utils.instantiate(config.model)
-    criterion: nn.Module = hydra.utils.instantiate(config.criterion)
+    criterion: _NegativeSamplingLoss = hydra.utils.instantiate(config.criterion)
 
     model = model.to(accelerator)
     criterion = criterion.to(accelerator)
@@ -119,7 +120,7 @@ def train_for_one_epoch(
     indexer: Indexer,
     dataloader: DataLoader,
     model: nn.Module,
-    criterion: nn.Module,
+    criterion: _NegativeSamplingLoss,
     optimizer: Optimizer,
     state: dict[str, Any],
 ) -> float:
@@ -181,7 +182,7 @@ def evaluate_for_one_epoch(
     indexer: Indexer,
     dataloader: DataLoader,
     model: nn.Module,
-    criterion: nn.Module,
+    criterion: _NegativeSamplingLoss,
     state: dict[str, Any],
 ) -> float:
     accelerator: str = state["accelerator"]
