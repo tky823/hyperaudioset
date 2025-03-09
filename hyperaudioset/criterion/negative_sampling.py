@@ -1,9 +1,11 @@
+from abc import abstractmethod
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-class EuclidNegativeSamplingLoss(nn.Module):
+class _NegativeSamplingLoss(nn.Module):
     def __init__(self, reduction: str = "mean") -> None:
         super().__init__()
 
@@ -28,6 +30,21 @@ class EuclidNegativeSamplingLoss(nn.Module):
 
         return loss
 
+    @abstractmethod
+    def compute_distance(
+        self, input: torch.Tensor, other: torch.Tensor, dim: int = -1
+    ) -> torch.Tensor:
+        pass
+
+
+class EuclidNegativeSamplingLoss(_NegativeSamplingLoss):
+    def compute_distance(
+        self, input: torch.Tensor, other: torch.Tensor, dim: int = -1
+    ) -> torch.Tensor:
+        return torch.sum((input - other) ** 2, dim=dim)
+
+
+class PoincareNegativeSamplingLoss(_NegativeSamplingLoss):
     def compute_distance(
         self, input: torch.Tensor, other: torch.Tensor, dim: int = -1
     ) -> torch.Tensor:

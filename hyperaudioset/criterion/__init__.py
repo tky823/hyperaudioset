@@ -1,5 +1,6 @@
-from .negative_sampling import EuclidNegativeSamplingLoss
+from .negative_sampling import EuclidNegativeSamplingLoss, PoincareNegativeSamplingLoss
 
 __all__ = [
     "EuclidNegativeSamplingLoss",
+    "PoincareNegativeSamplingLoss",
 ]
