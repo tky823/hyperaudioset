@@ -59,7 +59,7 @@ class TrainingMammalDadataset(IterableDataset):
         self.generator = None
         self.seed = seed
 
-    def __iter__(self) -> Iterator[tuple[int, int, list[int]]]:
+    def __iter__(self) -> Iterator[tuple[str, str, list[str]]]:
         tags = self.tags
         hierarchy = self.hierarchy
         pair_list = self.pair_list
@@ -149,34 +149,21 @@ class EvaluationMammalDadataset(Dataset):
         self.hierarchy = hierarchy
         self.pair_list = pair_list
 
-    def __getitem__(self, index: int) -> tuple[int, int, list[int]]:
+    def __getitem__(self, index: int) -> tuple[str, str, list[str]]:
         tags = self.tags
         hierarchy = self.hierarchy
-        pair_list = self.pair_list
 
-        pair = pair_list[index]
-
-        anchor = pair["self"]
-
-        anchor_index = tags.index(anchor)
+        anchor_index = index
+        anchor = hierarchy[anchor_index]["name"]
         parent = hierarchy[anchor_index]["parent"]
         child = hierarchy[anchor_index]["child"]
         positive_candidates = set(parent) | set(child)
         negative_candidates = set(tags) - set(positive_candidates) - {anchor}
 
-        positive = []
-
-        for positive_index in range(len(positive_candidates)):
-            _positive = hierarchy[positive_index]["name"]
-            positive.append(_positive)
-
-        negative = []
-
-        for negative_index in range(len(negative_candidates)):
-            _negative = hierarchy[negative_index]["name"]
-            negative.append(_negative)
+        positive = sorted(list(positive_candidates))
+        negative = sorted(list(negative_candidates))
 
         return anchor, positive, negative
 
     def __len__(self) -> int:
-        return len(self.pair_list)
+        return len(self.hierarchy)
