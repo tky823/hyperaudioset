@@ -1,0 +1,2 @@
+_target_: hyperaudioset.criterion.EuclidNegativeSamplingLoss
+reduction: mean
