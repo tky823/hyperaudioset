@@ -2,7 +2,10 @@ import torch
 
 
 def mobius_add(
-    input: torch.Tensor, other: torch.Tensor, curvature: torch.Tensor | float = 1
+    input: torch.Tensor,
+    other: torch.Tensor,
+    curvature: torch.Tensor | float = 1,
+    eps: float = 1e-8,
 ) -> torch.Tensor:
     if input.size() != other.size():
         dim = max(input.dim(), other.dim())
@@ -38,6 +41,7 @@ def mobius_add(
     coeff_other = 1 - curvature * norm_input
     denom = 1 + 2 * curvature * dot + curvature * norm_input * norm_other
     num = coeff_input.unsqueeze(dim=-1) * input + coeff_other.unsqueeze(dim=-1) * other
+    denom = torch.clamp(denom, min=eps)
     output = num / denom.unsqueeze(dim=-1)
     output = output.view(*batch_shape, num_features)
 
