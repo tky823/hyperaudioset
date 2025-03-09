@@ -9,4 +9,4 @@ optimizer:
 lr_scheduler:
   _target_: hyperaudioset.optim.lr_scheduler.BurnInLRScheduler
   burnin_step: 20
-  burnin_scale: 0.01
+  burnin_scale: 0.1
