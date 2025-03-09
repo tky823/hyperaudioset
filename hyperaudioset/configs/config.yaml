@@ -1,0 +1,12 @@
+defaults:
+  - system: default
+  - model: default
+  - optimizer: default
+  - criterion: default
+  - _self_
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: "./log/${now:%Y%m%d-%H%M%S}"
