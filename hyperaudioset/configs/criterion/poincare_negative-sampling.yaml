@@ -1,0 +1,2 @@
+_target_: hyperaudioset.criterion.PoincareNegativeSamplingLoss
+reduction: mean
