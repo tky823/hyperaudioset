@@ -3,7 +3,7 @@ import os
 import shutil
 import uuid
 
-from ..download import download_file
+from ..._github import download_file_from_github_release
 
 
 def load_mammal_name_to_index(chunk_size: int = 8192) -> dict[str, int]:
@@ -41,7 +41,7 @@ def download_wordnet_hierarchy(url: str, path: str, chunk_size: int = 8192) -> N
     temp_path = path + str(uuid.uuid4())[:8]
 
     try:
-        download_file(url, temp_path, chunk_size=chunk_size)
+        download_file_from_github_release(url, temp_path, chunk_size=chunk_size)
         shutil.move(temp_path, path)
     except (Exception, KeyboardInterrupt) as e:
         if os.path.exists(temp_path):
