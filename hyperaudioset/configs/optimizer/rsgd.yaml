@@ -5,3 +5,8 @@ defaults:
 optimizer:
   _target_: hyperaudioset.optim.RiemannSGD
   lr: 0.1
+
+lr_scheduler:
+  _target_: hyperaudioset.optim.lr_scheduler.BurnInLRScheduler
+  burnin_step: 20
+  burnin_scale: 0.01
