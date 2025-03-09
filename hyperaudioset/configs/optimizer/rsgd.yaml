@@ -1,0 +1,7 @@
+defaults:
+  - default
+  - _self_
+
+optimizer:
+  _target_: hyperaudioset.optim.RiemannSGD
+  lr: 0.1
