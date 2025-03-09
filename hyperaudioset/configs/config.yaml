@@ -6,7 +6,7 @@ defaults:
   - criterion: default
   - _self_
 
-epochs: 20
+epochs: 100
 now: ${now:%Y%m%d-%H%M%S}
 exp_dir: "./exp/${.now}"
 tensorboard_dir: "./tensorboard/${.now}"
