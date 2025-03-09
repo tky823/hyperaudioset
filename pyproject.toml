@@ -20,6 +20,7 @@ dependencies = [
     "hydra-core",
     "matplotlib",
     "torch",
+    "tensorboard",
 ]
 dynamic = [
     "version",
