@@ -1,5 +1,3 @@
-from typing import Any
-
 from .indexer import Indexer
 
 __all__ = [
