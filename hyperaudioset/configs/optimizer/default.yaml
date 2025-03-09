@@ -2,4 +2,4 @@ optimizer:
   _target_:
 
 lr_scheduler:
-  _target_:
+  _target_: hyperaudioset.optim.lr_scheduler.DummyLRScheduler
