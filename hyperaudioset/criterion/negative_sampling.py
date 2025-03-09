@@ -14,9 +14,9 @@ class EuclidNegativeSamplingLoss(nn.Module):
     ) -> torch.Tensor:
         reduction = self.reduction
 
-        positive_distance = torch.linalg.vector_norm((anchor - positive), dim=-1)
-        negative_distance = torch.linalg.vector_norm(
-            (anchor.unsqueeze(dim=-2) - negative), dim=-1
+        positive_distance = self.compute_distance(anchor, positive, dim=-1)
+        negative_distance = self.compute_distance(
+            anchor.unsqueeze(dim=-2), negative, dim=-1
         )
         positive_distance = positive_distance.unsqueeze(dim=-1)
         distance = torch.cat([positive_distance, negative_distance], dim=-1)
@@ -27,3 +27,8 @@ class EuclidNegativeSamplingLoss(nn.Module):
         loss = F.cross_entropy(-distance, target, reduction=reduction)
 
         return loss
+
+    def compute_distance(
+        self, input: torch.Tensor, other: torch.Tensor, dim: int = -1
+    ) -> torch.Tensor:
+        return torch.linalg.vector_norm((input - other), dim=dim)
