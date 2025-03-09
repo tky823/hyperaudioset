@@ -1,7 +1,10 @@
 import os
 
+from ._hydra import main
+
 __all__ = [
-    "hyperaudioset",
+    "hyperaudioset_cache_dir",
+    "main",
 ]
 
 _home_dir = os.path.expanduser("~")
