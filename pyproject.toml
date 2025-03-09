@@ -1,0 +1,54 @@
+[build-system]
+requires = [
+    "setuptools",
+    "torch",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyperaudioset"
+authors = [
+    {name = "Takuya Hasumi"},
+]
+description = "Hyperbolic embedding for AudioSet ontology."
+readme = "README.md"
+license = {file = "LICENSE"}
+urls = {url = "https://github.com/tky823/hyperaudioset"}
+requires-python = ">=3.9, <4"
+dependencies = [
+    "omegaconf",
+    "hydra-core",
+    "matplotlib",
+    "torch",
+]
+dynamic = [
+    "version",
+]
+
+[project.optional-dependencies]
+recipes = [
+    "tqdm",
+]
+dev = [
+    "flake8",
+    "black",
+    "isort"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "hyperaudioset.__version__"}
+
+[tool.setuptools.packages.find]
+include = [
+    "hyperaudioset",
+]
+
+[tool.black]
+line-length = 99
+
+[tools.flake8]
+max-line-length = 99
+
+[tool.isort]
+profile = "black"
+line_length = 99
