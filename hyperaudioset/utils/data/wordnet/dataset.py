@@ -82,12 +82,16 @@ class TrainingMammalDataset(IterableDataset):
         for pair_index in indices:
             pair = pair_list[pair_index]
 
-            if torch.rand((), generator=self.generator) < 0.5:
-                anchor = pair["self"]
-                positive = pair["child"]
-            else:
+            if pair["self"] == "mammal.n.01":
                 anchor = pair["child"]
                 positive = pair["self"]
+            else:
+                if torch.rand((), generator=self.generator) < 0.5:
+                    anchor = pair["self"]
+                    positive = pair["child"]
+                else:
+                    anchor = pair["child"]
+                    positive = pair["self"]
 
             anchor_index = tags.index(anchor)
             parent = hierarchy[anchor_index]["parent"]
