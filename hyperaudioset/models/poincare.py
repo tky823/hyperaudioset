@@ -1,10 +1,12 @@
 from typing import Any
 
 import torch
-import torch.nn as nn
+
+from ..functional.hyperbolic import mobius_add
+from .manifold import ManifoldEmbedding
 
 
-class PoincareEmbedding(nn.Embedding):
+class PoincareEmbedding(ManifoldEmbedding):
     """Poincare embedding.
 
     Args:
@@ -29,6 +31,9 @@ class PoincareEmbedding(nn.Embedding):
         _min, _max = range
 
         self.weight.data.uniform_(_min, _max)
+
+    def sub(self, input: torch.Tensor, other: torch.Tensor) -> torch.Tensor:
+        return mobius_add(input, -other)
 
     def proj(self, embedding: torch.Tensor) -> torch.Tensor:
         eps = self.eps
