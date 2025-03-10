@@ -213,6 +213,8 @@ def evaluate_for_one_epoch(
         positive_index = positive_index.to(accelerator)
         negative_index = negative_index.to(accelerator)
 
+        num_positive_samples = positive_index.size(-1)
+
         if negative_index.size(-1) == 0:
             # e.g. root node
             anchor_index = anchor_index.squeeze(dim=0)
@@ -220,11 +222,10 @@ def evaluate_for_one_epoch(
             negative_index = negative_index.squeeze(dim=0)
 
             positive_ranks = torch.arange(
-                positive_index.size(-1),
+                num_positive_samples,
                 dtype=torch.long,
                 device=accelerator,
             )
-            positive_ranks = positive_ranks.tolist()
         else:
             anchor_embedding = model(anchor_index)
             positive_embedding = model(positive_index)
@@ -245,17 +246,18 @@ def evaluate_for_one_epoch(
             )
             distance = torch.cat([_positive_distance, _negative_distance], dim=-1)
             positive_indices = torch.arange(
-                positive_embedding.size(-1),
+                num_positive_samples,
                 dtype=torch.long,
                 device=accelerator,
             )
-
             indices = torch.argsort(distance)
             positive_condition = torch.isin(indices, positive_indices)
             (positive_ranks,) = torch.where(positive_condition)
-            positive_ranks = positive_ranks.tolist()
 
-        mean_rank = sum(positive_ranks) / len(positive_ranks)
+        positive_ranks = positive_ranks.tolist()
+        mean_rank = (
+            sum(positive_ranks) - num_positive_samples * (num_positive_samples - 1) / 2
+        )
         evaluation_mean_rank.append(mean_rank)
 
     evaluation_mean_rank = sum(evaluation_mean_rank) / len(evaluation_mean_rank)
