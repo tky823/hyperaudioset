@@ -20,4 +20,4 @@ dataloader:
   evaluate:
     batch_size: 1
 
-num_embeddings: 1182
+num_embeddings: 1180
