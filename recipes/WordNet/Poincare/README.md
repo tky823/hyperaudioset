@@ -14,3 +14,20 @@ model="${model}" \
 criterion="${criterion}" \
 optimizer="${optimizer}"
 ```
+
+## Visualization
+
+```sh
+data="audioset"
+model="euclid"
+
+exp_dir="exp/<DATE>"
+
+root="mammal.n.01"
+
+python local/visualize.py \
+data="${data}" \
+model="${model}" \
+exp_dir="${exp_dir}" \
+root="${root}"
+```
