@@ -15,6 +15,7 @@ import hyperaudioset
 import hyperaudioset.utils
 from hyperaudioset.configs import Config
 from hyperaudioset.criterion.negative_sampling import _NegativeSamplingLoss
+from hyperaudioset.models.manifold import ManifoldEmbedding
 from hyperaudioset.utils import setup
 from hyperaudioset.utils.data import Indexer
 from hyperaudioset.utils.data.audioset import (
@@ -53,7 +54,7 @@ def main(config: Config | DictConfig) -> None:
     evaluation_dataloader: DataLoader = hydra.utils.instantiate(
         config.data.dataloader.evaluate, evaluation_dataset
     )
-    model: nn.Module = hydra.utils.instantiate(config.model)
+    model: ManifoldEmbedding = hydra.utils.instantiate(config.model)
     criterion: _NegativeSamplingLoss = hydra.utils.instantiate(config.criterion)
 
     model = model.to(accelerator)
