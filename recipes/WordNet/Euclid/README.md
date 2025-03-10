@@ -1,5 +1,7 @@
 # Euclid embedding
 
+## Training
+
 ```sh
 data="wordnet_mammal"
 model="euclid"

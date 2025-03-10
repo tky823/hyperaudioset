@@ -1,5 +1,7 @@
 # Poincare embedding
 
+## Training
+
 ```sh
 data="audioset"
 model="poincare"

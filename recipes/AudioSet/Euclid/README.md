@@ -1,5 +1,7 @@
 # Euclid embedding
 
+## Training
+
 ```sh
 data="audioset"
 model="euclid"
