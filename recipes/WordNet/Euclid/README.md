@@ -18,7 +18,7 @@ optimizer="${optimizer}"
 ## Visualization
 
 ```sh
-data="audioset"
+data="wordnet_mammal"
 model="euclid"
 
 exp_dir="exp/<DATE>"
