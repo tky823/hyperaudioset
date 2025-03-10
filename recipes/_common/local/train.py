@@ -145,21 +145,21 @@ def train_for_one_epoch(
     model.train()
 
     for anchor, positive, negative in dataloader:
-        anchor = indexer(anchor)
-        positive = indexer(positive)
-        negative = indexer(negative)
+        anchor_index = indexer(anchor)
+        positive_index = indexer(positive)
+        negative_index = indexer(negative)
 
-        anchor = torch.tensor(anchor)
-        positive = torch.tensor(positive)
-        negative = torch.tensor(negative)
+        anchor_index = torch.tensor(anchor_index, dtype=torch.long)
+        positive_index = torch.tensor(positive_index, dtype=torch.long)
+        negative_index = torch.tensor(negative_index, dtype=torch.long)
 
-        anchor = anchor.to(accelerator)
-        positive = positive.to(accelerator)
-        negative = negative.to(accelerator)
+        anchor_index = anchor_index.to(accelerator)
+        positive_index = positive_index.to(accelerator)
+        negative_index = negative_index.to(accelerator)
 
-        anchor_embedding = model(anchor)
-        positive_embedding = model(positive)
-        negative_embedding = model(negative)
+        anchor_embedding = model(anchor_index)
+        positive_embedding = model(positive_index)
+        negative_embedding = model(negative_index)
 
         loss = criterion(anchor_embedding, positive_embedding, negative_embedding)
 
@@ -201,44 +201,59 @@ def evaluate_for_one_epoch(
     model.eval()
 
     for anchor, positive, negative in dataloader:
-        anchor = indexer(anchor)
-        positive = indexer(positive)
-        negative = indexer(negative)
+        anchor_index = indexer(anchor)
+        positive_index = indexer(positive)
+        negative_index = indexer(negative)
 
-        anchor = torch.tensor(anchor)
-        positive = torch.tensor(positive)
-        negative = torch.tensor(negative)
+        anchor_index = torch.tensor(anchor_index, dtype=torch.long)
+        positive_index = torch.tensor(positive_index, dtype=torch.long)
+        negative_index = torch.tensor(negative_index, dtype=torch.long)
 
-        anchor = anchor.to(accelerator)
-        positive = positive.to(accelerator)
-        negative = negative.to(accelerator)
+        anchor_index = anchor_index.to(accelerator)
+        positive_index = positive_index.to(accelerator)
+        negative_index = negative_index.to(accelerator)
 
-        anchor_embedding = model(anchor)
-        positive_embedding = model(positive)
-        negative_embedding = model(negative)
+        if negative_index.size(-1) == 0:
+            # e.g. root node
+            anchor_index = anchor_index.squeeze(dim=0)
+            positive_index = positive_index.squeeze(dim=0)
+            negative_index = negative_index.squeeze(dim=0)
 
-        anchor = anchor.squeeze(dim=0)
-        positive = positive.squeeze(dim=0)
-        negative = negative.squeeze(dim=0)
-        anchor_embedding = anchor_embedding.squeeze(dim=0)
-        positive_embedding = positive_embedding.squeeze(dim=0)
-        negative_embedding = negative_embedding.squeeze(dim=0)
+            positive_ranks = torch.arange(
+                positive_index.size(-1),
+                dtype=torch.long,
+                device=accelerator,
+            )
+            positive_ranks = positive_ranks.tolist()
+        else:
+            anchor_embedding = model(anchor_index)
+            positive_embedding = model(positive_index)
+            negative_embedding = model(negative_index)
 
-        _positive_distance = criterion.compute_distance(
-            anchor_embedding, positive_embedding
-        )
-        _negative_distance = criterion.compute_distance(
-            anchor_embedding, negative_embedding
-        )
-        distance = torch.cat([_positive_distance, _negative_distance], dim=-1)
-        positive_indices = torch.arange(
-            positive.size(-1), dtype=torch.long, device=positive.device
-        )
+            anchor_index = anchor_index.squeeze(dim=0)
+            positive_index = positive_index.squeeze(dim=0)
+            negative_index = negative_index.squeeze(dim=0)
+            anchor_embedding = anchor_embedding.squeeze(dim=0)
+            positive_embedding = positive_embedding.squeeze(dim=0)
+            negative_embedding = negative_embedding.squeeze(dim=0)
 
-        indices = torch.argsort(distance)
-        positive_condition = torch.isin(indices, positive_indices)
-        (positive_ranks,) = torch.where(positive_condition)
-        positive_ranks = positive_ranks.tolist()
+            _positive_distance = criterion.compute_distance(
+                anchor_embedding, positive_embedding
+            )
+            _negative_distance = criterion.compute_distance(
+                anchor_embedding, negative_embedding
+            )
+            distance = torch.cat([_positive_distance, _negative_distance], dim=-1)
+            positive_indices = torch.arange(
+                positive_embedding.size(-1),
+                dtype=torch.long,
+                device=accelerator,
+            )
+
+            indices = torch.argsort(distance)
+            positive_condition = torch.isin(indices, positive_indices)
+            (positive_ranks,) = torch.where(positive_condition)
+            positive_ranks = positive_ranks.tolist()
 
         mean_rank = sum(positive_ranks) / len(positive_ranks)
         evaluation_mean_rank.append(mean_rank)
