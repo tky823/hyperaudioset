@@ -39,7 +39,7 @@ def mobius_add(
 
     coeff_input = 1 + 2 * curvature * dot + curvature * norm_other
     coeff_other = 1 - curvature * norm_input
-    denom = 1 + 2 * curvature * dot + curvature * norm_input * norm_other
+    denom = 1 + 2 * curvature * dot + (curvature**2) * norm_input * norm_other
     num = coeff_input.unsqueeze(dim=-1) * input + coeff_other.unsqueeze(dim=-1) * other
     denom = torch.clamp(denom, min=eps)
     output = num / denom.unsqueeze(dim=-1)
