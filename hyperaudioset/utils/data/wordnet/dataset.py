@@ -83,6 +83,7 @@ class TrainingMammalDataset(IterableDataset):
             pair = pair_list[pair_index]
 
             if pair["self"] == "mammal.n.01":
+                # to avoid empty negative candidates
                 anchor = pair["child"]
                 positive = pair["self"]
             else:
