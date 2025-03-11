@@ -11,12 +11,10 @@ dataset:
   train:
     _target_: hyperaudioset.utils.data.wordnet.TrainingMammalDataset
     num_neg_samples: 50
-    parent_as_positive: true
-    child_as_positive: false
+    is_symmetric: false
   evaluate:
     _target_: hyperaudioset.utils.data.wordnet.EvaluationMammalDataset
-    parent_as_positive: ${..train.parent_as_positive}
-    child_as_positive: ${..train.child_as_positive}
+    is_symmetric: ${..train.is_symmetric}
 
 dataloader:
   train:
