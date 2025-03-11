@@ -196,7 +196,8 @@ def evaluate_for_one_epoch(
 ) -> float:
     accelerator: str = state["accelerator"]
 
-    evaluation_mean_rank = []
+    evaluation_ranks = []
+    evaluation_positive_samples = []
 
     model.eval()
 
@@ -259,12 +260,13 @@ def evaluate_for_one_epoch(
             (positive_ranks,) = torch.where(positive_condition)
 
         positive_ranks = positive_ranks.tolist()
-        mean_rank = (
+        evaluation_rank = (
             sum(positive_ranks) - num_positive_samples * (num_positive_samples - 1) / 2
         )
-        evaluation_mean_rank.append(mean_rank)
+        evaluation_ranks.append(evaluation_rank)
+        evaluation_positive_samples.append(num_positive_samples)
 
-    evaluation_mean_rank = sum(evaluation_mean_rank) / len(evaluation_mean_rank)
+    evaluation_mean_rank = sum(evaluation_ranks) / sum(evaluation_positive_samples)
 
     return evaluation_mean_rank
 
