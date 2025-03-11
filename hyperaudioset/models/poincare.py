@@ -3,7 +3,7 @@ from typing import Any
 
 import torch
 
-from ..functional.hyperbolic import mobius_add
+from ..functional.hyperbolic import mobius_sub
 from .manifold import ManifoldEmbedding
 
 
@@ -50,7 +50,7 @@ class PoincareEmbedding(ManifoldEmbedding):
     def sub(self, input: torch.Tensor, other: torch.Tensor) -> torch.Tensor:
         curvature = self.curvature
 
-        return mobius_add(input, -other, curvature=curvature)
+        return mobius_sub(input, other, curvature=curvature)
 
     def proj(self, embedding: torch.Tensor) -> torch.Tensor:
         curvature = self.curvature

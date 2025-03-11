@@ -49,6 +49,15 @@ def mobius_add(
     return output
 
 
+def mobius_sub(
+    input: torch.Tensor,
+    other: torch.Tensor,
+    curvature: torch.Tensor | float = -1,
+    eps: float = 1e-8,
+) -> torch.Tensor:
+    return mobius_add(input, -other, curvature=curvature, eps=eps)
+
+
 def poincare_distance(
     input: torch.Tensor, other: torch.Tensor, curvature: float = -1, dim: int = -1
 ) -> torch.Tensor:
