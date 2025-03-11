@@ -67,25 +67,31 @@ class PoincareEmbedding(ManifoldEmbedding):
         return embedding
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
+        curvature = self.curvature
+
         x = super().forward(input)
-        output = RiemannGradientFunction.apply(x)
+        output = RiemannGradientFunction.apply(x, curvature)
 
         return output
 
 
 class RiemannGradientFunction(torch.autograd.Function):
     @staticmethod
-    def forward(ctx: Any, input: torch.Tensor) -> torch.Tensor:
+    def forward(ctx: Any, input: torch.Tensor, curvature: float) -> torch.Tensor:
+        assert not isinstance(curvature, torch.Tensor)
+
         ctx.save_for_backward(input)
+        ctx.curvature = curvature
 
         return input
 
     @staticmethod
     def backward(ctx: Any, grad_output: torch.Tensor) -> torch.Tensor:
         (input,) = ctx.saved_tensors
+        curvature = ctx.curvature
 
-        num = 1 - torch.sum(input**2, dim=-1)
+        num = 1 + curvature * torch.sum(input**2, dim=-1)
         scale = (num**2) / 4
         grad_input = scale.unsqueeze(dim=-1) * grad_output
 
-        return grad_input
+        return grad_input, None
