@@ -61,11 +61,11 @@ class TrainingMammalDataset(IterableDataset):
         self.hierarchy = hierarchy
         self.pair_list = pair_list
 
-        self.parent_as_positive = parent_as_positive
-        self.child_as_positive = child_as_positive
-
         self.num_neg_samples = num_neg_samples
         self.length = length
+
+        self.parent_as_positive = parent_as_positive
+        self.child_as_positive = child_as_positive
 
         self.generator = None
         self.seed = seed
@@ -74,10 +74,10 @@ class TrainingMammalDataset(IterableDataset):
         tags = self.tags
         hierarchy = self.hierarchy
         pair_list = self.pair_list
-        parent_as_positive = self.parent_as_positive
-        child_as_positive = self.child_as_positive
         num_neg_samples = self.num_neg_samples
         length = self.length
+        parent_as_positive = self.parent_as_positive
+        child_as_positive = self.child_as_positive
         seed = self.seed
 
         if self.generator is None:
@@ -190,14 +190,10 @@ class EvaluationMammalDataset(Dataset):
             hierarchy: list[dict[str, str]] = json.load(f)
 
         tags = []
-        pair_list = []
 
         for sample in hierarchy:
             name = sample["name"]
             tags.append(name)
-
-            for child_name in sample["child"]:
-                pair_list.append({"self": name, "child": child_name})
 
         if not parent_as_positive and not child_as_positive:
             raise ValueError(
@@ -207,7 +203,6 @@ class EvaluationMammalDataset(Dataset):
 
         self.tags = tags
         self.hierarchy = hierarchy
-        self.pair_list = pair_list
 
         self.parent_as_positive = parent_as_positive
         self.child_as_positive = child_as_positive
