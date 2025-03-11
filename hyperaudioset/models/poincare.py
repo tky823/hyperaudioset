@@ -11,7 +11,7 @@ class PoincareEmbedding(ManifoldEmbedding):
     """Poincare embedding.
 
     Args:
-        curvature (float): Nonnegative curvature.
+        curvature (float): Negative curvature. Default: ``-1``.
         range (tuple, optional): Range of weight in initialization.
             Default: ``(-0.0001, 0.0001)``.
 
@@ -20,14 +20,14 @@ class PoincareEmbedding(ManifoldEmbedding):
     def __init__(
         self,
         *args,
-        curvature: float = 1,
+        curvature: float = -1,
         range: tuple[float] | None = None,
         eps: float = 1e-3,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        assert curvature > 0, "curvature should be positive."
+        assert curvature < 0, "curvature should be negative."
 
         self.curvature = curvature
         self.eps = eps
@@ -42,8 +42,8 @@ class PoincareEmbedding(ManifoldEmbedding):
 
         _min, _max = range
 
-        assert -1 / math.sqrt(curvature) < _min
-        assert _max < 1 / math.sqrt(curvature)
+        assert -1 / math.sqrt(-curvature) < _min
+        assert _max < 1 / math.sqrt(-curvature)
 
         self.weight.data.uniform_(_min, _max)
 
@@ -58,7 +58,7 @@ class PoincareEmbedding(ManifoldEmbedding):
 
         assert embedding.dim() == 2
 
-        allowed_norm = 1 / math.sqrt(curvature) - eps
+        allowed_norm = 1 / math.sqrt(-curvature) - eps
         norm = torch.linalg.vector_norm(embedding, dim=-1, keepdim=True)
         projected_embedding = allowed_norm * embedding / norm
         condition = norm > allowed_norm

@@ -4,9 +4,10 @@ import torch
 def mobius_add(
     input: torch.Tensor,
     other: torch.Tensor,
-    curvature: torch.Tensor | float = 1,
+    curvature: torch.Tensor | float = -1,
     eps: float = 1e-8,
 ) -> torch.Tensor:
+    """Apply Mobius addition."""
     if input.size() != other.size():
         dim = max(input.dim(), other.dim())
 
@@ -37,9 +38,9 @@ def mobius_add(
     norm_input = torch.sum(input**2, dim=-1)
     norm_other = torch.sum(other**2, dim=-1)
 
-    coeff_input = 1 + 2 * curvature * dot + curvature * norm_other
-    coeff_other = 1 - curvature * norm_input
-    denom = 1 + 2 * curvature * dot + (curvature**2) * norm_input * norm_other
+    coeff_input = 1 - 2 * curvature * dot - curvature * norm_other
+    coeff_other = 1 + curvature * norm_input
+    denom = 1 - 2 * curvature * dot + (curvature**2) * norm_input * norm_other
     num = coeff_input.unsqueeze(dim=-1) * input + coeff_other.unsqueeze(dim=-1) * other
     denom = torch.clamp(denom, min=eps)
     output = num / denom.unsqueeze(dim=-1)
@@ -49,13 +50,13 @@ def mobius_add(
 
 
 def poincare_distance(
-    input: torch.Tensor, other: torch.Tensor, curvature: float = 1, dim: int = -1
+    input: torch.Tensor, other: torch.Tensor, curvature: float = -1, dim: int = -1
 ) -> torch.Tensor:
     assert dim == -1
 
     distance = mobius_add(-input, other, curvature=curvature)
-    norm = curvature**0.5 * torch.linalg.vector_norm(distance, dim=-1)
-    scale = 2 / (curvature**0.5)
+    norm = (-curvature) ** 0.5 * torch.linalg.vector_norm(distance, dim=dim)
+    scale = 2 / (-curvature) ** 0.5
     output = scale * torch.tanh(norm)
 
     return output
