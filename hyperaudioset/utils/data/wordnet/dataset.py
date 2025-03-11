@@ -102,10 +102,8 @@ class TrainingMammalDataset(IterableDataset):
                     positive = pair["self"]
                 else:
                     if child_as_positive:
-                        raise ValueError(
-                            "If parent_as_positive=False and child_as_positive=True, "
-                            "mammal.n.01 should be excluded from self in pairs."
-                        )
+                        anchor = pair["self"]
+                        positive = pair["child"]
                     else:
                         raise ValueError(
                             "Pair of parent_as_positive=False and child_as_positive=False "
