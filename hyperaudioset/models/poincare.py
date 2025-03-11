@@ -38,7 +38,7 @@ class PoincareEmbedding(ManifoldEmbedding):
         curvature = self.curvature
 
         if range is None:
-            range = (-0.0001, 0.0001)
+            range = (-0.001, 0.001)
 
         _min, _max = range
 
