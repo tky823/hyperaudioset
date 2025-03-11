@@ -3,8 +3,9 @@ import os
 from typing import Iterator
 
 import torch
-from torch.utils.data import Dataset, IterableDataset
+from torch.utils.data import IterableDataset
 
+from ..dataset import EvaluationDataset
 from ._download import download_wordnet_hierarchy
 
 
@@ -162,7 +163,7 @@ class TrainingMammalDataset(IterableDataset):
         return self.length
 
 
-class EvaluationMammalDataset(Dataset):
+class EvaluationMammalDataset(EvaluationDataset):
     def __init__(
         self,
         parent_as_positive: bool = True,
@@ -206,32 +207,3 @@ class EvaluationMammalDataset(Dataset):
 
         self.parent_as_positive = parent_as_positive
         self.child_as_positive = child_as_positive
-
-    def __getitem__(self, index: int) -> tuple[str, str, list[str]]:
-        tags = self.tags
-        hierarchy = self.hierarchy
-        parent_as_positive = self.parent_as_positive
-        child_as_positive = self.child_as_positive
-
-        anchor_index = index
-        anchor = hierarchy[anchor_index]["name"]
-        parent = hierarchy[anchor_index]["parent"]
-        child = hierarchy[anchor_index]["child"]
-
-        positive_candidates = set()
-
-        if parent_as_positive:
-            positive_candidates |= set(parent)
-
-        if child_as_positive:
-            positive_candidates |= set(child)
-
-        negative_candidates = set(tags) - set(positive_candidates) - {anchor}
-
-        positive = sorted(list(positive_candidates))
-        negative = sorted(list(negative_candidates))
-
-        return anchor, positive, negative
-
-    def __len__(self) -> int:
-        return len(self.hierarchy)
