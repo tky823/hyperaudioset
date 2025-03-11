@@ -32,7 +32,7 @@ class RiemannSGD(Optimizer):
             params: list[nn.Parameter] = param_group["params"]
 
             for param in params:
-                grad = param.grad
+                grad = param.grad.data
                 projected = self.proj(param.data - lr * grad)
                 param.data.copy_(projected)
 
