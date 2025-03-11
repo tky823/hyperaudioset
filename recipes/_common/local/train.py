@@ -214,9 +214,13 @@ def evaluate_for_one_epoch(
         negative_index = negative_index.to(accelerator)
 
         num_positive_samples = positive_index.size(-1)
+        num_negative_samples = negative_index.size(-1)
 
-        if negative_index.size(-1) == 0:
-            # e.g. root node
+        if num_positive_samples == 0:
+            # all samples are negative
+            continue
+        elif num_negative_samples == 0:
+            # all samples are positive
             anchor_index = anchor_index.squeeze(dim=0)
             positive_index = positive_index.squeeze(dim=0)
             negative_index = negative_index.squeeze(dim=0)
