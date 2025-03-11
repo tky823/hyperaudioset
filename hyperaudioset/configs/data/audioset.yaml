@@ -11,8 +11,12 @@ dataset:
   train:
     _target_: hyperaudioset.utils.data.audioset.TrainingAudioSetDataset
     num_neg_samples: 50
+    parent_as_positive: true
+    child_as_positive: false
   evaluate:
     _target_: hyperaudioset.utils.data.audioset.EvaluationAudioSetDataset
+    parent_as_positive: ${..train.parent_as_positive}
+    child_as_positive: ${..train.child_as_positive}
 
 dataloader:
   train:
