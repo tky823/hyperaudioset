@@ -6,27 +6,22 @@ from torch.utils.data import Dataset
 class EvaluationDataset(Dataset):
     tags: list[str]
     hierarchy: list[dict[str, Any]]
-    parent_as_positive: bool
-    child_as_positive: bool
+    is_symmetric: bool
 
     def __getitem__(self, index: int) -> tuple[str, str, list[str]]:
         tags = self.tags
         hierarchy = self.hierarchy
-        parent_as_positive = self.parent_as_positive
-        child_as_positive = self.child_as_positive
+        is_symmetric = self.is_symmetric
 
         anchor_index = index
         anchor = hierarchy[anchor_index]["name"]
         parent = hierarchy[anchor_index]["parent"]
         child = hierarchy[anchor_index]["child"]
 
-        positive_candidates = set()
-
-        if parent_as_positive:
-            positive_candidates |= set(parent)
-
-        if child_as_positive:
-            positive_candidates |= set(child)
+        if is_symmetric:
+            positive_candidates = set(parent) | set(child)
+        else:
+            positive_candidates = set(parent)
 
         negative_candidates = set(tags) - set(positive_candidates) - {anchor}
 

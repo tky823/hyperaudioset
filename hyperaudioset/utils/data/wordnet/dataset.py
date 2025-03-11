@@ -13,9 +13,8 @@ class TrainingMammalDataset(IterableDataset):
     def __init__(
         self,
         num_neg_samples: int = 1,
-        parent_as_positive: bool = True,
-        child_as_positive: bool = False,
         length: int | None = None,
+        is_symmetric: bool = False,
         seed: int = 0,
     ) -> None:
         super().__init__()
@@ -52,12 +51,6 @@ class TrainingMammalDataset(IterableDataset):
         if length is None:
             length = len(pair_list)
 
-        if not parent_as_positive and not child_as_positive:
-            raise ValueError(
-                "Pair of parent_as_positive=False and child_as_positive=False "
-                "is not supported."
-            )
-
         self.tags = tags
         self.hierarchy = hierarchy
         self.pair_list = pair_list
@@ -65,8 +58,7 @@ class TrainingMammalDataset(IterableDataset):
         self.num_neg_samples = num_neg_samples
         self.length = length
 
-        self.parent_as_positive = parent_as_positive
-        self.child_as_positive = child_as_positive
+        self.is_symmetric = is_symmetric
 
         self.generator = None
         self.seed = seed
@@ -77,8 +69,7 @@ class TrainingMammalDataset(IterableDataset):
         pair_list = self.pair_list
         num_neg_samples = self.num_neg_samples
         length = self.length
-        parent_as_positive = self.parent_as_positive
-        child_as_positive = self.child_as_positive
+        is_symmetric = self.is_symmetric
         seed = self.seed
 
         if self.generator is None:
@@ -98,51 +89,28 @@ class TrainingMammalDataset(IterableDataset):
 
             if pair["self"] == "mammal.n.01":
                 # to avoid empty negative candidates
-                if parent_as_positive:
-                    anchor = pair["child"]
-                    positive = pair["self"]
-                else:
-                    if child_as_positive:
+                anchor = pair["child"]
+                positive = pair["self"]
+            else:
+                if is_symmetric:
+                    if torch.rand((), generator=self.generator) < 0.5:
                         anchor = pair["self"]
                         positive = pair["child"]
-                    else:
-                        raise ValueError(
-                            "Pair of parent_as_positive=False and child_as_positive=False "
-                            "is not supported."
-                        )
-            else:
-                if parent_as_positive:
-                    if child_as_positive:
-                        if torch.rand((), generator=self.generator) < 0.5:
-                            anchor = pair["self"]
-                            positive = pair["child"]
-                        else:
-                            anchor = pair["child"]
-                            positive = pair["self"]
                     else:
                         anchor = pair["child"]
                         positive = pair["self"]
                 else:
-                    if child_as_positive:
-                        anchor = pair["self"]
-                        positive = pair["child"]
-                    else:
-                        raise ValueError(
-                            "Pair of parent_as_positive=False and child_as_positive=False "
-                            "is not supported."
-                        )
+                    anchor = pair["child"]
+                    positive = pair["self"]
 
             anchor_index = tags.index(anchor)
             parent = hierarchy[anchor_index]["parent"]
             child = hierarchy[anchor_index]["child"]
 
-            positive_candidates = set()
-
-            if parent_as_positive:
-                positive_candidates |= set(parent)
-
-            if child_as_positive:
-                positive_candidates |= set(child)
+            if is_symmetric:
+                positive_candidates = set(parent) | set(child)
+            else:
+                positive_candidates = set(parent)
 
             negative_candidates = set(tags) - set(positive_candidates) - {anchor}
 
@@ -166,8 +134,7 @@ class TrainingMammalDataset(IterableDataset):
 class EvaluationMammalDataset(EvaluationDataset):
     def __init__(
         self,
-        parent_as_positive: bool = True,
-        child_as_positive: bool = False,
+        is_symmetric: bool = False,
     ) -> None:
         super().__init__()
 
@@ -196,14 +163,7 @@ class EvaluationMammalDataset(EvaluationDataset):
             name = sample["name"]
             tags.append(name)
 
-        if not parent_as_positive and not child_as_positive:
-            raise ValueError(
-                "Pair of parent_as_positive=False and child_as_positive=False "
-                "is not supported."
-            )
-
         self.tags = tags
         self.hierarchy = hierarchy
 
-        self.parent_as_positive = parent_as_positive
-        self.child_as_positive = child_as_positive
+        self.is_symmetric = is_symmetric
