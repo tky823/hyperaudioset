@@ -128,7 +128,7 @@ def main(config: Config | DictConfig) -> None:
 def train_for_one_epoch(
     indexer: Indexer,
     dataloader: DataLoader,
-    model: nn.Module,
+    model: ManifoldEmbedding,
     criterion: _NegativeSamplingLoss,
     optimizer: Optimizer,
     state: dict[str, Any],
@@ -190,7 +190,7 @@ def train_for_one_epoch(
 def evaluate_for_one_epoch(
     indexer: Indexer,
     dataloader: DataLoader,
-    model: nn.Module,
+    model: ManifoldEmbedding,
     criterion: _NegativeSamplingLoss,
     state: dict[str, Any],
 ) -> float:
