@@ -26,3 +26,5 @@ class BurnInLRScheduler(LambdaLR):
                 return 1
 
         super().__init__(optimizer, lr_lambda, **kwargs)
+
+        self.burnin_step = burnin_step
