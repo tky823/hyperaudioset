@@ -3,21 +3,24 @@ import os
 from typing import Iterator
 
 import torch
-from torch.utils.data import IterableDataset
 
-from ..dataset import EvaluationDataset
+from ..dataset import EvaluationDataset, TrainingDataset
 from ._download import download_audioset_hierarchy
 
 
-class TrainingAudioSetDataset(IterableDataset):
+class TrainingAudioSetDataset(TrainingDataset):
     def __init__(
         self,
         num_neg_samples: int = 1,
         length: int | None = None,
+        burnin_dampening: float = 1,
         is_symmetric: bool = False,
         seed: int = 0,
     ) -> None:
         super().__init__()
+
+        if is_symmetric:
+            raise NotImplementedError("is_symmetric=True is not fully implemented.")
 
         from ... import hyperaudioset_cache_dir
 
@@ -40,13 +43,22 @@ class TrainingAudioSetDataset(IterableDataset):
 
         tags = []
         pair_list = []
+        weights = {}
 
         for sample in hierarchy:
             name = sample["name"]
             tags.append(name)
 
+            if name not in weights:
+                weights[name] = 0
+
             for child_name in sample["child"]:
                 pair_list.append({"self": name, "child": child_name})
+
+                weights[name] += 1
+
+                if child_name not in weights:
+                    weights[child_name] = 0
 
         if length is None:
             length = len(pair_list)
@@ -57,6 +69,9 @@ class TrainingAudioSetDataset(IterableDataset):
 
         self.num_neg_samples = num_neg_samples
         self.length = length
+        self.burnin = None
+        self.burnin_dampening = burnin_dampening
+        self.weights = weights
 
         self.is_symmetric = is_symmetric
 
@@ -69,8 +84,21 @@ class TrainingAudioSetDataset(IterableDataset):
         pair_list = self.pair_list
         num_neg_samples = self.num_neg_samples
         length = self.length
+        burnin = self.burnin
         is_symmetric = self.is_symmetric
         seed = self.seed
+
+        worker_info = torch.utils.data.get_worker_info()
+
+        if worker_info is None:
+            pass
+        else:
+            assert worker_info.num_workers == 1, "Multiple workers are not supported."
+
+        if burnin is None:
+            raise ValueError(
+                "Set burnin by calling set_burnin(True) or set_burnin(False) before iteration."
+            )
 
         if self.generator is None:
             self.generator = torch.Generator()
@@ -107,23 +135,43 @@ class TrainingAudioSetDataset(IterableDataset):
             else:
                 positive_candidates = set(parent)
 
-            negative_candidates = set(tags) - set(positive_candidates) - {anchor}
+            negative_candidates = set(tags) - positive_candidates - {anchor}
+            negative_candidates = sorted(list(negative_candidates))
 
-            negative_indices = torch.randint(
-                0, len(negative_candidates), (num_neg_samples,)
-            )
+            if burnin:
+                weights = self.weights
+                burnin_dampening = self.burnin_dampening
+
+                negative_candidate_weights = []
+
+                for _negative in negative_candidates:
+                    _weight = weights[_negative] ** burnin_dampening
+                    negative_candidate_weights.append(_weight)
+
+                negative_candidate_weights = torch.tensor(
+                    negative_candidate_weights, dtype=torch.float
+                )
+                negative_indices = torch.multinomial(
+                    negative_candidate_weights,
+                    num_neg_samples,
+                    replacement=False,
+                    generator=self.generator,
+                )
+            else:
+                negative_indices = torch.randperm(
+                    len(negative_candidates), generator=self.generator
+                )
+                negative_indices = negative_indices[:num_neg_samples]
+
             negative_indices = negative_indices.tolist()
 
             negative = []
 
             for negative_index in negative_indices:
-                _negative = hierarchy[negative_index]["name"]
+                _negative = negative_candidates[negative_index]
                 negative.append(_negative)
 
             yield anchor, positive, negative
-
-    def __len__(self) -> int:
-        return self.length
 
 
 class EvaluationAudioSetDataset(EvaluationDataset):
