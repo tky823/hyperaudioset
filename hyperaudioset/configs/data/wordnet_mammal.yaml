@@ -11,6 +11,7 @@ dataset:
   train:
     _target_: hyperaudioset.utils.data.wordnet.TrainingMammalDataset
     num_neg_samples: 50
+    burnin_dampening: 0.75
     is_symmetric: false
   evaluate:
     _target_: hyperaudioset.utils.data.wordnet.EvaluationMammalDataset
