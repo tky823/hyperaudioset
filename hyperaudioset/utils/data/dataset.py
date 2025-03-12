@@ -1,6 +1,17 @@
 from typing import Any
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, IterableDataset
+
+
+class TrainingDataset(IterableDataset):
+    length: int
+    burnin: bool | None
+
+    def set_burnin(self, burnin: bool) -> None:
+        self.burnin = burnin
+
+    def __len__(self) -> int:
+        return self.length
 
 
 class EvaluationDataset(Dataset):
