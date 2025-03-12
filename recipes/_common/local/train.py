@@ -16,6 +16,7 @@ import hyperaudioset.utils
 from hyperaudioset.configs import Config
 from hyperaudioset.criterion.negative_sampling import _NegativeSamplingLoss
 from hyperaudioset.models.manifold import ManifoldEmbedding
+from hyperaudioset.optim.lr_scheduler import BurnInLRScheduler
 from hyperaudioset.utils import setup
 from hyperaudioset.utils.data import Indexer
 from hyperaudioset.utils.data.audioset import (
@@ -67,6 +68,13 @@ def main(config: Config | DictConfig) -> None:
         config.optimizer.lr_scheduler, optimizer
     )
 
+    training_dataset: TrainingMammalDataset | TrainingAudioSetDataset = (
+        training_dataloader.dataset
+    )
+
+    if isinstance(lr_scheduer, BurnInLRScheduler):
+        training_dataset.set_burnin(True)
+
     best_training_loss = float("inf")
     iteration = 0
 
@@ -83,6 +91,12 @@ def main(config: Config | DictConfig) -> None:
         state["epoch"] = epoch
         training_loss = []
         evaluation_mean_rank = []
+
+        if isinstance(lr_scheduer, BurnInLRScheduler):
+            burnin_step = lr_scheduer.burnin_step
+
+            if epoch >= burnin_step:
+                training_dataset.set_burnin(False)
 
         training_loss = train_for_one_epoch(
             indexer,
