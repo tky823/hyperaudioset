@@ -58,11 +58,8 @@ class PoincareEmbedding(ManifoldEmbedding):
 
         assert embedding.dim() == 2
 
-        allowed_norm = 1 / math.sqrt(-curvature) - eps
-        norm = torch.linalg.vector_norm(embedding, dim=-1, keepdim=True)
-        projected_embedding = allowed_norm * embedding / norm
-        condition = norm > allowed_norm
-        embedding = torch.where(condition, projected_embedding, embedding)
+        maxnorm = 1 / math.sqrt(-curvature) - eps
+        embedding = torch.renorm(embedding, p=2, dim=0, maxnorm=maxnorm)
 
         return embedding
 
