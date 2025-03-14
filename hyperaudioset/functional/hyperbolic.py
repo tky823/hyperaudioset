@@ -66,6 +66,6 @@ def poincare_distance(
     distance = mobius_add(-input, other, curvature=curvature)
     norm = (-curvature) ** 0.5 * torch.linalg.vector_norm(distance, dim=dim)
     scale = 2 / (-curvature) ** 0.5
-    output = scale * torch.tanh(norm)
+    output = scale * torch.atanh(norm)
 
     return output
