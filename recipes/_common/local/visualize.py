@@ -178,7 +178,7 @@ def visualize(
                 color=colors[0],
                 size=10,
             ),
-            hoverinfo="all",
+            hoverinfo="name",
         )
     )
 
