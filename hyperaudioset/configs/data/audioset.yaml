@@ -11,6 +11,7 @@ dataset:
   train:
     _target_: hyperaudioset.utils.data.audioset.TrainingAudioSetDataset
     num_neg_samples: 50
+    length: 10000
     burnin_dampening: 0.75
     is_symmetric: false
   evaluate:
