@@ -74,6 +74,8 @@ def main(config: Config | DictConfig) -> None:
 
     if isinstance(lr_scheduer, BurnInLRScheduler):
         training_dataset.set_burnin(True)
+    else:
+        training_dataset.set_burnin(False)
 
     best_training_loss = float("inf")
     iteration = 0
