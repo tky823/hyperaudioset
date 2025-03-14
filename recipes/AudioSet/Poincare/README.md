@@ -23,7 +23,7 @@ model="euclid"
 
 exp_dir="exp/<DATE>"
 
-root="Human sounds"
+root="Sound"
 
 python local/visualize.py \
 data="${data}" \
