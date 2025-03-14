@@ -10,7 +10,7 @@ defaults:
 exp_dir: "./exp/${.now}"
 
 # train
-epochs: 100
+epochs: 300
 tensorboard_dir: "./tensorboard/${.now}"
 
 # visualize
