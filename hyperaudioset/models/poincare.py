@@ -13,7 +13,7 @@ class PoincareEmbedding(ManifoldEmbedding):
     Args:
         curvature (float): Negative curvature. Default: ``-1``.
         range (tuple, optional): Range of weight in initialization.
-            Default: ``(-0.0001, 0.0001)``.
+            Default: ``(-0.001, 0.001)``.
 
     """
 
@@ -53,9 +53,10 @@ class PoincareEmbedding(ManifoldEmbedding):
 
         return mobius_sub(input, other, curvature=curvature, eps=eps)
 
-    def expmap(
+    def retmap(
         self, input: torch.Tensor, point: torch.Tensor | float = 0
     ) -> torch.Tensor:
+        """Retraction map, which is a first-order of approximation of exponential map."""
         curvature = self.curvature
         eps = self.eps
 
@@ -64,6 +65,14 @@ class PoincareEmbedding(ManifoldEmbedding):
         x = input + point
         maxnorm = 1 / math.sqrt(-curvature) - eps
         output = torch.renorm(x, p=2, dim=0, maxnorm=maxnorm)
+
+        return output
+
+    def expmap(
+        self, input: torch.Tensor, point: torch.Tensor | float = 0
+    ) -> torch.Tensor:
+        """Exponential map, which is approximated by retraction map here."""
+        output = self.retmap(input, point=point)
 
         return output
 
