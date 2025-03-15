@@ -16,3 +16,5 @@ pip install .
 - AudioSet: `recipes/AudioSet/`
 
 **NOTE** Our recipe does not support distributed training.
+
+<img src="assets/poincare-embedding.gif" alt="Poincare embedding of AudioSet ontology" title="Poincare embedding of AudioSet ontology">
