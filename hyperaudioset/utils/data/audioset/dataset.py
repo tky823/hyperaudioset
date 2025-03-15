@@ -163,7 +163,8 @@ class TrainingAudioSetDataset(TrainingDataset):
                     num_samples=num_neg_samples,
                     weights=self.weights,
                     dampening=self.burnin_dampening,
-                    replacement=self.generator,
+                    replacement=False,
+                    generator=self.generator,
                 )
             else:
                 negative_indices = torch.randperm(
