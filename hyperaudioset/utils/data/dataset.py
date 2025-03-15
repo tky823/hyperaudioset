@@ -55,7 +55,7 @@ class TrainingDataset(IterableDataset):
             _sample = candidates[index]
             samples.append(_sample)
 
-        return indices
+        return samples
 
     def __len__(self) -> int:
         return self.length
