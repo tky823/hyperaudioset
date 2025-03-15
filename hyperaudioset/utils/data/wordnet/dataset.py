@@ -3,6 +3,7 @@ import os
 from typing import Iterator
 
 import torch
+import torch.distributed as dist
 
 from ..dataset import EvaluationDataset, TrainingDataset
 from ._download import download_wordnet_hierarchy
@@ -77,6 +78,7 @@ class TrainingMammalDataset(TrainingDataset):
 
         self.generator = None
         self.seed = seed
+        self.epoch_index = 0  # to share random state among workers
 
     def __iter__(self) -> Iterator[tuple[str, str, list[str]]]:
         tags = self.tags
@@ -87,13 +89,27 @@ class TrainingMammalDataset(TrainingDataset):
         burnin = self.burnin
         is_symmetric = self.is_symmetric
         seed = self.seed
+        epoch_index = self.epoch_index
 
         worker_info = torch.utils.data.get_worker_info()
+        is_distributed = dist.is_available() and dist.is_initialized()
 
         if worker_info is None:
-            pass
+            local_worker_id = 0
+            num_local_workers = 1
         else:
-            assert worker_info.num_workers == 1, "Multiple workers are not supported."
+            local_worker_id = worker_info.id
+            num_local_workers = worker_info.num_workers
+
+        if is_distributed:
+            rank = dist.get_rank()
+            world_size = dist.get_world_size()
+        else:
+            rank = 0
+            world_size = 1
+
+        global_worker_id = rank * num_local_workers + local_worker_id
+        num_global_workers = world_size * num_local_workers
 
         if burnin is None:
             raise ValueError(
@@ -102,7 +118,9 @@ class TrainingMammalDataset(TrainingDataset):
 
         if self.generator is None:
             self.generator = torch.Generator()
-            self.generator.manual_seed(seed)
+
+        # share random state among workers to random sampling
+        self.generator.manual_seed(seed + epoch_index)
 
         indices = torch.randint(
             0,
@@ -111,6 +129,7 @@ class TrainingMammalDataset(TrainingDataset):
             generator=self.generator,
         )
         indices = indices.tolist()
+        indices = indices[global_worker_id::num_global_workers]
 
         for pair_index in indices:
             pair = pair_list[pair_index]
@@ -144,39 +163,29 @@ class TrainingMammalDataset(TrainingDataset):
             negative_candidates = sorted(list(negative_candidates))
 
             if burnin:
-                weights = self.weights
-                burnin_dampening = self.burnin_dampening
-
-                negative_candidate_weights = []
-
-                for _negative in negative_candidates:
-                    _weight = weights[_negative] ** burnin_dampening
-                    negative_candidate_weights.append(_weight)
-
-                negative_candidate_weights = torch.tensor(
-                    negative_candidate_weights, dtype=torch.float
-                )
-                negative_indices = torch.multinomial(
-                    negative_candidate_weights,
-                    num_neg_samples,
-                    replacement=False,
-                    generator=self.generator,
+                negative = self.sample(
+                    negative_candidates,
+                    num_samples=num_neg_samples,
+                    weights=self.weights,
+                    dampening=self.burnin_dampening,
+                    replacement=self.generator,
                 )
             else:
                 negative_indices = torch.randperm(
                     len(negative_candidates), generator=self.generator
                 )
                 negative_indices = negative_indices[:num_neg_samples]
+                negative_indices = negative_indices.tolist()
 
-            negative_indices = negative_indices.tolist()
+                negative = []
 
-            negative = []
-
-            for negative_index in negative_indices:
-                _negative = negative_candidates[negative_index]
-                negative.append(_negative)
+                for negative_index in negative_indices:
+                    _negative = negative_candidates[negative_index]
+                    negative.append(_negative)
 
             yield anchor, positive, negative
+
+        self.epoch_index = epoch_index + 1
 
 
 class EvaluationMammalDataset(EvaluationDataset):
