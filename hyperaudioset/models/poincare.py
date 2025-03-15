@@ -22,7 +22,7 @@ class PoincareEmbedding(ManifoldEmbedding):
         *args,
         curvature: float = -1,
         range: tuple[float] | None = None,
-        eps: float = 1e-3,
+        eps: float = 1e-5,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -49,8 +49,9 @@ class PoincareEmbedding(ManifoldEmbedding):
 
     def sub(self, input: torch.Tensor, other: torch.Tensor) -> torch.Tensor:
         curvature = self.curvature
+        eps = self.eps
 
-        return mobius_sub(input, other, curvature=curvature)
+        return mobius_sub(input, other, curvature=curvature, eps=eps)
 
     def expmap(
         self, input: torch.Tensor, origin: torch.Tensor | float = 0
