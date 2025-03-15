@@ -5,7 +5,7 @@ def mobius_add(
     input: torch.Tensor,
     other: torch.Tensor,
     curvature: torch.Tensor | float = -1,
-    eps: float = 1e-8,
+    eps: float = 1e-5,
 ) -> torch.Tensor:
     """Apply Mobius addition."""
     if input.size() != other.size():
@@ -53,19 +53,24 @@ def mobius_sub(
     input: torch.Tensor,
     other: torch.Tensor,
     curvature: torch.Tensor | float = -1,
-    eps: float = 1e-8,
+    eps: float = 1e-5,
 ) -> torch.Tensor:
     return mobius_add(input, -other, curvature=curvature, eps=eps)
 
 
 def poincare_distance(
-    input: torch.Tensor, other: torch.Tensor, curvature: float = -1, dim: int = -1
+    input: torch.Tensor,
+    other: torch.Tensor,
+    curvature: float = -1,
+    dim: int = -1,
+    eps: float = 1e-5,
 ) -> torch.Tensor:
     assert dim == -1
 
-    distance = mobius_add(-input, other, curvature=curvature)
+    distance = mobius_add(-input, other, curvature=curvature, eps=eps)
     norm = (-curvature) ** 0.5 * torch.linalg.vector_norm(distance, dim=dim)
     scale = 2 / (-curvature) ** 0.5
+    norm = torch.clamp(norm, min=-1 + eps, max=1 - eps)
     output = scale * torch.atanh(norm)
 
     return output
