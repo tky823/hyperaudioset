@@ -54,14 +54,14 @@ class PoincareEmbedding(ManifoldEmbedding):
         return mobius_sub(input, other, curvature=curvature, eps=eps)
 
     def expmap(
-        self, input: torch.Tensor, origin: torch.Tensor | float = 0
+        self, input: torch.Tensor, point: torch.Tensor | float = 0
     ) -> torch.Tensor:
         curvature = self.curvature
         eps = self.eps
 
         assert input.dim() == 2
 
-        x = input + origin
+        x = input + point
         maxnorm = 1 / math.sqrt(-curvature) - eps
         output = torch.renorm(x, p=2, dim=0, maxnorm=maxnorm)
 

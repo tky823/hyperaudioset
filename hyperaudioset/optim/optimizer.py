@@ -33,7 +33,7 @@ class RiemannSGD(Optimizer):
 
             for param in params:
                 grad = param.grad.data
-                projected = self.expmap(-lr * grad, origin=param.data)
+                projected = self.expmap(-lr * grad, point=param.data)
                 param.data.copy_(projected)
 
         return loss
