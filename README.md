@@ -14,3 +14,5 @@ pip install .
 
 - WordNet (mammals): `recipes/WordNet/`
 - AudioSet: `recipes/AudioSet/`
+
+**NOTE** Our recipe does not support distributed training.
