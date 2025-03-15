@@ -57,14 +57,7 @@ class PoincareEmbedding(ManifoldEmbedding):
         self, input: torch.Tensor, point: torch.Tensor | float = 0
     ) -> torch.Tensor:
         """Retraction map, which is a first-order of approximation of exponential map."""
-        curvature = self.curvature
-        eps = self.eps
-
-        assert input.dim() == 2
-
-        x = input + point
-        maxnorm = 1 / math.sqrt(-curvature) - eps
-        output = torch.renorm(x, p=2, dim=0, maxnorm=maxnorm)
+        output = input + point
 
         return output
 
@@ -73,6 +66,20 @@ class PoincareEmbedding(ManifoldEmbedding):
     ) -> torch.Tensor:
         """Exponential map, which is approximated by retraction map here."""
         output = self.retmap(input, point=point)
+
+        return output
+
+    def proj(self, input: torch.Tensor) -> torch.Tensor:
+        """Projection, which ensures input should be on Poincare disk."""
+        curvature = self.curvature
+        eps = self.eps
+
+        *batch_shape, embedding_dim = input.size()
+        maxnorm = 1 / math.sqrt(-curvature) - eps
+
+        x = input.view(-1, embedding_dim)
+        x = torch.renorm(x, p=2, dim=0, maxnorm=maxnorm)
+        output = x.view(*batch_shape, embedding_dim)
 
         return output
 

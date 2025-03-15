@@ -67,6 +67,7 @@ def instantiate_optimizer(
 
             params = module.parameters()
             optimizer_kwargs["expmap"] = module.expmap
+            optimizer_kwargs["proj"] = module.proj
         else:
             raise ValueError(
                 "Module should be given to instantiate_optimizer if optimizer is RiemannSGD."
