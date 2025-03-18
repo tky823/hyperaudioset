@@ -20,9 +20,6 @@ class TrainingMedleyDBDataset(TrainingDataset):
     ) -> None:
         super().__init__()
 
-        if is_symmetric:
-            raise NotImplementedError("is_symmetric=True is not fully implemented.")
-
         from ... import hyperaudioset_cache_dir
 
         medleydb_root = os.path.join(hyperaudioset_cache_dir, "data", "MedleyDB")
@@ -60,6 +57,9 @@ class TrainingMedleyDBDataset(TrainingDataset):
 
                 if child_name not in weights:
                     weights[child_name] = 0
+
+                if is_symmetric:
+                    weights[child_name] += 1
 
         if length is None:
             length = len(pair_list)
