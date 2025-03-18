@@ -1,0 +1,27 @@
+defaults:
+  - default
+  - _self_
+
+indexer:
+  _target_: hyperaudioset.utils.data.Indexer
+  name_to_index:
+    _target_: hyperaudioset.utils.data.medleydb.load_name_to_index
+
+dataset:
+  train:
+    _target_: hyperaudioset.utils.data.medleydb.TrainingMedleyDBDataset
+    num_neg_samples: 50
+    length: 5000
+    burnin_dampening: 0.75
+    is_symmetric: false
+  evaluate:
+    _target_: hyperaudioset.utils.data.medleydb.EvaluationMedleyDBDataset
+    is_symmetric: ${..train.is_symmetric}
+
+dataloader:
+  train:
+    batch_size: 10
+  evaluate:
+    batch_size: 1
+
+num_embeddings: 141
