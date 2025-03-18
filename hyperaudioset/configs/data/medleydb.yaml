@@ -11,7 +11,7 @@ dataset:
   train:
     _target_: hyperaudioset.utils.data.medleydb.TrainingMedleyDBDataset
     num_neg_samples: 50
-    length: 5000
+    length: 1000
     burnin_dampening: 0.75
     is_symmetric: false
   evaluate:
