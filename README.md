@@ -14,6 +14,7 @@ pip install .
 
 - WordNet (mammals): `recipes/WordNet/`
 - AudioSet: `recipes/AudioSet/`
+- MedleyDB: `recipes/MedleyDB/`
 
 **NOTE**: Our recipe does not support distributed training.
 
