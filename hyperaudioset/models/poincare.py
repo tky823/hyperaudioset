@@ -1,4 +1,3 @@
-import math
 from typing import Any
 
 import torch
@@ -11,7 +10,7 @@ class PoincareEmbedding(ManifoldEmbedding):
     """Poincare embedding.
 
     Args:
-        curvature (float): Negative curvature. Default: ``-1``.
+        radius (float): Radius of Poincare ball. Default: ``1``.
         range (tuple, optional): Range of weight in initialization.
             Default: ``(-0.001, 0.001)``.
 
@@ -20,38 +19,38 @@ class PoincareEmbedding(ManifoldEmbedding):
     def __init__(
         self,
         *args,
-        curvature: float = -1,
+        radius: float = 1,
         range: tuple[float] | None = None,
         eps: float = 1e-5,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        assert curvature < 0, "curvature should be negative."
+        assert radius > 0, "radius should be positive."
 
-        self.curvature = curvature
+        self.radius = radius
         self.eps = eps
 
         self._reset_parameters(range)
 
     def _reset_parameters(self, range: tuple[float] | None = None) -> None:
-        curvature = self.curvature
+        radius = self.radius
 
         if range is None:
             range = (-0.001, 0.001)
 
         _min, _max = range
 
-        assert -1 / math.sqrt(-curvature) < _min
-        assert _max < 1 / math.sqrt(-curvature)
+        assert -radius < _min, f"Minimum ({_min}) should be greater than {-radius}."
+        assert _max < radius, f"Maximum ({_max}) should be less than {radius}."
 
         self.weight.data.uniform_(_min, _max)
 
     def sub(self, input: torch.Tensor, other: torch.Tensor) -> torch.Tensor:
-        curvature = self.curvature
+        radius = self.radius
         eps = self.eps
 
-        return mobius_sub(input, other, curvature=curvature, eps=eps)
+        return mobius_sub(input, other, radius=radius, eps=eps)
 
     def retmap(
         self, input: torch.Tensor, point: torch.Tensor | float = 0
@@ -71,11 +70,11 @@ class PoincareEmbedding(ManifoldEmbedding):
 
     def proj(self, input: torch.Tensor) -> torch.Tensor:
         """Projection, which ensures input should be on Poincare disk."""
-        curvature = self.curvature
+        radius = self.radius
         eps = self.eps
 
         *batch_shape, embedding_dim = input.size()
-        maxnorm = 1 / math.sqrt(-curvature) - eps
+        maxnorm = radius - eps
 
         x = input.view(-1, embedding_dim)
         x = torch.renorm(x, p=2, dim=0, maxnorm=maxnorm)
@@ -84,30 +83,30 @@ class PoincareEmbedding(ManifoldEmbedding):
         return output
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        curvature = self.curvature
+        radius = self.radius
 
         x = super().forward(input)
-        output = RiemannGradientFunction.apply(x, curvature)
+        output = RiemannGradientFunction.apply(x, radius)
 
         return output
 
 
 class RiemannGradientFunction(torch.autograd.Function):
     @staticmethod
-    def forward(ctx: Any, input: torch.Tensor, curvature: float) -> torch.Tensor:
-        assert not isinstance(curvature, torch.Tensor)
+    def forward(ctx: Any, input: torch.Tensor, radius: float) -> torch.Tensor:
+        assert not isinstance(radius, torch.Tensor)
 
         ctx.save_for_backward(input)
-        ctx.curvature = curvature
+        ctx.radius = radius
 
         return input
 
     @staticmethod
     def backward(ctx: Any, grad_output: torch.Tensor) -> torch.Tensor:
         (input,) = ctx.saved_tensors
-        curvature = ctx.curvature
+        radius = ctx.radius
 
-        num = 1 + curvature * torch.sum(input**2, dim=-1)
+        num = 1 - torch.sum(input**2, dim=-1) / (radius**2)
         scale = (num**2) / 4
         grad_input = scale.unsqueeze(dim=-1) * grad_output
 
