@@ -19,7 +19,7 @@ optimizer="${optimizer}"
 
 ```sh
 data="audioset"
-model="euclid"
+model="poincare"
 
 exp_dir="exp/<DATE>"
 
