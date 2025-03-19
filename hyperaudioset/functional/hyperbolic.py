@@ -71,7 +71,7 @@ def poincare_distance(
     distance = mobius_add(-input, other, radius=radius, eps=eps)
     norm = torch.linalg.vector_norm(distance, dim=dim) / radius
     scale = 2 * radius
-    norm = torch.clamp(norm, min=-1 + eps, max=1 - eps)
+    norm = torch.clamp(norm, max=1 - eps)
     output = scale * torch.atanh(norm)
 
     return output
