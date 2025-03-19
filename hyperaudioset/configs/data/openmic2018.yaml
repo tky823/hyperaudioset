@@ -1,0 +1,27 @@
+defaults:
+  - default
+  - _self_
+
+indexer:
+  _target_: hyperaudioset.utils.data.Indexer
+  name_to_index:
+    _target_: hyperaudioset.utils.data.openmic2018.load_name_to_index
+
+dataset:
+  train:
+    _target_: hyperaudioset.utils.data.openmic2018.TrainingOpenMIC2018Dataset
+    num_neg_samples: 10
+    length: 100
+    burnin_dampening: 0.75
+    is_symmetric: false
+  evaluate:
+    _target_: hyperaudioset.utils.data.openmic2018.EvaluationOpenMIC2018Dataset
+    is_symmetric: ${..train.is_symmetric}
+
+dataloader:
+  train:
+    batch_size: 10
+  evaluate:
+    batch_size: 1
+
+num_embeddings: 30
