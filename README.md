@@ -12,9 +12,10 @@ pip install .
 
 ## Recipes
 
-- WordNet (mammals): `recipes/WordNet/`
 - AudioSet: `recipes/AudioSet/`
+- WordNet (mammals): `recipes/WordNet/`
 - MedleyDB: `recipes/MedleyDB/`
+- OpenMIC2018: `recipes/OpenMIC2018/`
 
 **NOTE**: Our recipe does not support distributed training.
 
