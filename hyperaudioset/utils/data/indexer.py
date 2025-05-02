@@ -11,9 +11,9 @@ class Indexer:
         >>> name_to_index = load_mammal_name_to_index()
         >>> indexer = Indexer(name_to_index)
         >>> indexer("mammal.n.01")
-        639
+        637
         >>> indexer(["mammal.n.01", "dog.n.01"])
-        [639, 305]
+        [637, 305]
 
     """
 
