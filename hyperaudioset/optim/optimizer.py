@@ -12,6 +12,7 @@ class RiemannSGD(Optimizer):
         lr: float | torch.Tensor = 1e-3,
         expmap: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None = None,
         proj: Callable[[torch.Tensor], torch.Tensor] | None = None,
+        use_retmap: bool = True,
     ) -> None:
         defaults = dict(
             lr=lr,
@@ -21,6 +22,7 @@ class RiemannSGD(Optimizer):
 
         self.expmap = expmap
         self.proj = proj
+        self.use_retmap = use_retmap
 
     def step(self, closure: Callable = None) -> Any:
         loss = None
@@ -36,10 +38,10 @@ class RiemannSGD(Optimizer):
             for param in params:
                 grad = param.grad.data
 
-                if self.expmap is None:
+                if self.use_retmap or self.expmap is None:
                     updated = -lr * grad + param.data
                 else:
-                    updated = self.expmap(-lr * grad, point=param.data)
+                    updated = self.expmap(-lr * grad, root=param.data)
 
                 if self.proj is not None:
                     updated = self.proj(updated)

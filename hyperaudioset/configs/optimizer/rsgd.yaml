@@ -5,6 +5,7 @@ defaults:
 optimizer:
   _target_: hyperaudioset.optim.RiemannSGD
   lr: 0.3
+  use_retmap: true
 
 lr_scheduler:
   _target_: hyperaudioset.optim.lr_scheduler.BurnInLRScheduler
