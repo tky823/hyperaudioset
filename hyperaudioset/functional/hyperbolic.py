@@ -1,33 +1,58 @@
+from typing import Union
+
 import torch
 
 
 def mobius_add(
     input: torch.Tensor,
     other: torch.Tensor,
-    radius: torch.Tensor | float = 1,
+    curvature: Union[float, torch.Tensor] = -1,
+    dim: int = -1,
     eps: float = 1e-5,
 ) -> torch.Tensor:
-    """Apply Mobius addition."""
-    if input.size() != other.size():
-        dim = max(input.dim(), other.dim())
+    """Apply Mobius addition.
 
-        missing_dim = dim - input.dim()
-        missing_shape = (1,) * missing_dim
-        target_shape = missing_shape + input.size()
-        input = input.view(*target_shape)
+    Args:
+        input (torch.Tensor): Vectors of shape (*, num_features).
+        other (torch.Tensor): Vectors of shape (*, num_features).
+        curvature (float or torch.Tensor): Secctional curvature. Default: ``-1``.
 
-        missing_dim = dim - other.dim()
-        missing_shape = (1,) * missing_dim
-        target_shape = missing_shape + other.size()
-        other = other.view(*target_shape)
+    Returns:
+        torch.Tensor: Vectors of shape (*, num_features).
 
-        target_shape = ()
+    """
+    assert dim == -1, "Only dim=-1 is supported."
 
-        for _input_size, _other_size in zip(input.size(), other.size()):
-            target_shape = target_shape + (max(_input_size, _other_size),)
+    if not isinstance(input, torch.Tensor):
+        if isinstance(other, torch.Tensor):
+            factory_kwargs = {
+                "dtype": other.dtype,
+                "device": other.device,
+            }
+        else:
+            factory_kwargs = {}
 
-        input = input.expand(target_shape).contiguous()
-        other = other.expand(target_shape).contiguous()
+        input = torch.tensor(input, **factory_kwargs)
+
+    if not isinstance(other, torch.Tensor):
+        if isinstance(input, torch.Tensor):
+            factory_kwargs = {
+                "dtype": input.dtype,
+                "device": input.device,
+            }
+        else:
+            factory_kwargs = {}
+
+        other = torch.tensor(other, **factory_kwargs)
+
+    target_shape = torch.broadcast_shapes(input.size(), other.size())
+
+    if target_shape == ():
+        # corner case
+        target_shape = (1,)
+
+    input = input.expand(target_shape).contiguous()
+    other = other.expand(target_shape).contiguous()
 
     *batch_shape, num_features = input.size()
 
@@ -38,10 +63,9 @@ def mobius_add(
     norm_input = torch.sum(input**2, dim=-1)
     norm_other = torch.sum(other**2, dim=-1)
 
-    c = 1 / (radius**2)
-    coeff_input = 1 + 2 * c * dot + c * norm_other
-    coeff_other = 1 - c * norm_input
-    denom = 1 + 2 * c * dot + (c**2) * norm_input * norm_other
+    coeff_input = 1 - 2 * curvature * dot - curvature * norm_other
+    coeff_other = 1 + curvature * norm_input
+    denom = 1 - 2 * curvature * dot + (curvature**2) * norm_input * norm_other
     num = coeff_input.unsqueeze(dim=-1) * input + coeff_other.unsqueeze(dim=-1) * other
     denom = torch.clamp(denom, min=eps)
     output = num / denom.unsqueeze(dim=-1)
@@ -53,24 +77,38 @@ def mobius_add(
 def mobius_sub(
     input: torch.Tensor,
     other: torch.Tensor,
-    radius: torch.Tensor | float = 1,
+    curvature: Union[float, torch.Tensor] = -1,
+    dim: int = -1,
     eps: float = 1e-5,
 ) -> torch.Tensor:
-    return mobius_add(input, -other, radius=radius, eps=eps)
+    """Apply Mobius subtraction.
+
+    Args:
+        input (torch.Tensor): Vectors of shape (*, num_features).
+        other (torch.Tensor): Vectors of shape (*, num_features).
+        curvature (float or torch.Tensor): Negative curvature.
+
+    Returns:
+        torch.Tensor: Vectors of shape (*, num_features).
+
+    """
+    return mobius_add(input, -other, curvature=curvature, dim=dim, eps=eps)
 
 
 def poincare_distance(
     input: torch.Tensor,
     other: torch.Tensor,
-    radius: float = 1,
+    curvature: float = -1,
     dim: int = -1,
     eps: float = 1e-5,
 ) -> torch.Tensor:
+    """Distance between two points on Poincare ball with negative curvature."""
     assert dim == -1
 
-    distance = mobius_add(-input, other, radius=radius, eps=eps)
-    norm = torch.linalg.vector_norm(distance, dim=dim) / radius
-    scale = 2 * radius
+    _curvature = (-curvature) ** 0.5
+    distance = mobius_add(-input, other, curvature=curvature, eps=eps)
+    norm = _curvature * torch.linalg.vector_norm(distance, dim=dim)
+    scale = 2 / _curvature
     norm = torch.clamp(norm, max=1 - eps)
     output = scale * torch.atanh(norm)
 
