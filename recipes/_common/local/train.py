@@ -64,7 +64,7 @@ def main(config: Config | DictConfig) -> None:
     optimizer: Optimizer = hyperaudioset.utils.instantiate_optimizer(
         config.optimizer.optimizer, model
     )
-    lr_scheduer: _LRScheduler = hydra.utils.instantiate(
+    lr_scheduler: _LRScheduler = hydra.utils.instantiate(
         config.optimizer.lr_scheduler, optimizer
     )
 
@@ -72,7 +72,7 @@ def main(config: Config | DictConfig) -> None:
         training_dataloader.dataset
     )
 
-    if isinstance(lr_scheduer, BurnInLRScheduler):
+    if isinstance(lr_scheduler, BurnInLRScheduler):
         training_dataset.set_burnin(True)
     else:
         training_dataset.set_burnin(False)
@@ -94,8 +94,8 @@ def main(config: Config | DictConfig) -> None:
         training_loss = []
         evaluation_mean_rank = []
 
-        if isinstance(lr_scheduer, BurnInLRScheduler):
-            burnin_step = lr_scheduer.burnin_step
+        if isinstance(lr_scheduler, BurnInLRScheduler):
+            burnin_step = lr_scheduler.burnin_step
 
             if epoch >= burnin_step:
                 training_dataset.set_burnin(False)
@@ -117,7 +117,7 @@ def main(config: Config | DictConfig) -> None:
             "evaluation_mean_rank (epoch)", evaluation_mean_rank, global_step=epoch + 1
         )
 
-        lr_scheduer.step()
+        lr_scheduler.step()
 
         msg = f"[Epoch {epoch + 1}/{epochs}] training_loss: {training_loss}"
         logger.info(msg)
