@@ -11,7 +11,6 @@ from omegaconf import DictConfig
 from torch.utils.data import DataLoader
 
 import hyperaudioset
-import hyperaudioset.utils
 from hyperaudioset.configs import Config
 from hyperaudioset.models.manifold import ManifoldEmbedding
 from hyperaudioset.utils import setup
